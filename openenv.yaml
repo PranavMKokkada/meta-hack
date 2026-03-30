@@ -1,0 +1,126 @@
+spec_version: 1
+name: technical-support-bug-triage-hub
+type: space
+runtime: fastapi
+app: app:app
+port: 7860
+
+description: >
+  An OpenEnv environment that simulates real-world technical support and bug
+  triage. An AI agent reads incoming tickets (customer support + bug reports),
+  classifies them, assigns priority and team, detects duplicates, and drafts
+  customer responses. Observations include customer sentiment, SLA deadlines,
+  and sender history. Response grading includes hallucination detection.
+  Three tasks cover easy to hard difficulty with programmatic graders
+  scoring 0.0 to 1.0.
+
+version: "1.0.0"
+author: Andrea
+
+tags:
+  - openenv
+  - customer-support
+  - bug-triage
+  - ticket-routing
+  - duplicate-detection
+
+env:
+  api_url: "http://localhost:7860"
+  endpoints:
+    health: GET /health
+    metadata: GET /metadata
+    schema: GET /schema
+    reset: POST /reset
+    step: POST /step
+    state: GET /state
+    tasks: GET /tasks
+    grader: POST /grader
+    baseline: POST /baseline
+    validate: GET /validate
+
+tasks:
+  - id: task_easy
+    name: Ticket Classification & Priority
+    difficulty: easy
+    description: >
+      Classify 6 clear-cut tickets by category and priority.
+      Weighted scoring: classification 40%, priority 35%, routing 15%, labels 10%.
+      SLA urgency modifier for enterprise+critical tickets.
+    num_episodes: 6
+
+  - id: task_medium
+    name: Smart Routing & Duplicate Detection
+    difficulty: medium
+    description: >
+      Route 6 ambiguous tickets to the right team and detect duplicates from
+      episode ticket history. Weighted scoring: classification 20%, priority 15%,
+      routing 25%, labels 15%, duplicate detection 25%.
+      Penalties for empty labels. SLA urgency modifier.
+    num_episodes: 6
+
+  - id: task_hard
+    name: Full Triage & Response Drafting
+    difficulty: hard
+    description: >
+      Full triage pipeline on 6 complex, multi-issue tickets: classify,
+      prioritize, route, detect duplicates, AND draft customer responses.
+      Response scored on: keyword coverage (35%), professional tone (20%),
+      length (10%), no profanity (15%), no hallucinated claims (20%).
+      Hallucination traps: each ticket defines forbidden phrases.
+    num_episodes: 6
+
+  - id: task_expert
+    name: "Expert Triage: Full Pipeline + Escalation + Cross-Ticket + Docs"
+    difficulty: expert
+    description: >
+      12 mixed-difficulty tickets requiring every skill: classify, prioritize,
+      route, detect duplicates, draft responses, decide escalation, identify
+      cross-ticket relationships, and reference internal knowledge base docs.
+      Tickets include production outages, billing disputes, compliance requests.
+    num_episodes: 12
+
+models:
+  observation:
+    type: object
+    fields:
+      - ticket_id
+      - subject
+      - body
+      - sender_email
+      - sender_tier
+      - timestamp
+      - attachments
+      - ticket_history
+      - step_number
+      - total_steps
+      - task_id
+      - sentiment
+      - sla_hours_remaining
+      - is_repeat_sender
+      - sender_ticket_count
+      - knowledge_base
+
+  action:
+    type: object
+    fields:
+      - ticket_id
+      - classification
+      - priority
+      - assigned_team
+      - labels
+      - duplicate_of
+      - response_draft
+      - escalate
+      - related_to
+
+  reward:
+    type: float
+    range: [0.0, 1.0]
+    breakdown:
+      - classification_score
+      - priority_score
+      - routing_score
+      - labels_score
+      - duplicate_score
+      - response_score
+      - escalation_score
