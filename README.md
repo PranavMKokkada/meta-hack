@@ -1,3 +1,13 @@
+---
+title: Technical Support & Bug Triage Hub
+emoji: 🎫
+colorFrom: blue
+colorTo: purple
+sdk: docker
+app_file: app.py
+pinned: false
+---
+
 <div align="center">
 
 # 🎫 Technical Support & Bug Triage Hub
