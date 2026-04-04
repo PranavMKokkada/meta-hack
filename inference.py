@@ -137,19 +137,23 @@ def parse_model_response(raw: str, ticket_id: str) -> dict:
         return fallback
 
 
-def run_task(client: OpenAI, task_id: str) -> dict:
-    """Run one task end-to-end and return the grader result."""
+def run_task(client: OpenAI, task_id: str) -> tuple[dict, list[float]]:
+    """Run one task end-to-end and return grader result + rewards list."""
     # Reset
     resp = requests.post(f"{ENV_API_URL}/reset", json={"task_id": task_id})
     resp.raise_for_status()
     obs = resp.json()
 
     actions: list[dict] = []
+    rewards: list[float] = []
     done = False
+    step_count = 0
 
     while not done:
+        step_count += 1
         prompt = build_user_prompt(obs)
 
+        error_msg = None
         try:
             completion = client.chat.completions.create(
                 model=MODEL_NAME,
@@ -164,16 +168,30 @@ def run_task(client: OpenAI, task_id: str) -> dict:
         except Exception as exc:
             print(f"  Model request failed ({exc}). Using fallback.", file=sys.stderr)
             response_text = ""
+            error_msg = str(exc)
 
         action = parse_model_response(response_text, obs["ticket_id"])
         actions.append(action)
 
         # Step
-        step_resp = requests.post(f"{ENV_API_URL}/step", json=action)
-        step_resp.raise_for_status()
-        step_result = step_resp.json()
+        try:
+            step_resp = requests.post(f"{ENV_API_URL}/step", json=action)
+            step_resp.raise_for_status()
+            step_result = step_resp.json()
+        except Exception as exc:
+            error_msg = str(exc)
+            step_result = {"done": True}
 
-        done = step_result["done"]
+        done = step_result.get("done", False)
+        reward = step_result.get("reward", 0.0)
+        rewards.append(reward)
+        
+        # Emit [STEP] line to stdout
+        action_str = json.dumps(action, separators=(',', ':'))
+        error_json = json.dumps(error_msg) if error_msg else "null"
+        done_str = "true" if done else "false"
+        print(f"[STEP] step={step_count} action={action_str} reward={reward:.2f} done={done_str} error={error_json}")
+        
         if not done and step_result.get("observation"):
             obs = step_result["observation"]
 
@@ -182,7 +200,9 @@ def run_task(client: OpenAI, task_id: str) -> dict:
         f"{ENV_API_URL}/grader", json={"task_id": task_id, "actions": actions}
     )
     grader_resp.raise_for_status()
-    return grader_resp.json()
+    grader_result = grader_resp.json()
+    
+    return grader_result, rewards
 
 
 def main() -> None:
@@ -205,9 +225,19 @@ def main() -> None:
 
     results = {}
     for task_id in TASK_IDS:
+        # Emit [START] to stdout
+        print(f"[START] task={task_id} env=triage_hub model={MODEL_NAME}")
         print(f"Running {task_id}...", file=sys.stderr)
-        result = run_task(client, task_id)
+        
+        result, rewards = run_task(client, task_id)
         results[task_id] = result
+        
+        # Emit [END] to stdout
+        success = result.get("score", 0.0) > 0.0
+        steps = len(rewards)
+        rewards_str = ",".join(f"{r:.2f}" for r in rewards)
+        print(f"[END] success={str(success).lower()} steps={steps} rewards={rewards_str}")
+        
         print(f"  {task_id}: score={result['score']}", file=sys.stderr)
 
     summary = {
