@@ -120,11 +120,14 @@ def schema():
 # ── Core Environment Endpoints ─────────────────────────────────────────────────
 
 @app.post("/reset", response_model=Observation)
-def reset(req: ResetRequest, x_session_id: Optional[str] = Header(None)):
-    if req.task_id not in TASK_DEFINITIONS:
-        raise HTTPException(400, f"Unknown task_id: {req.task_id}. Valid: {list(TASK_DEFINITIONS)}")
+def reset(req: Optional[ResetRequest] = None, task_id: Optional[str] = None, x_session_id: Optional[str] = Header(None)):
+    # Accept task_id from either request body or query parameter
+    actual_task_id = task_id or (req.task_id if req else None) or "task_easy"
+    
+    if actual_task_id not in TASK_DEFINITIONS:
+        raise HTTPException(400, f"Unknown task_id: {actual_task_id}. Valid: {list(TASK_DEFINITIONS)}")
     env = _get_env(x_session_id)
-    obs = env.reset(req.task_id)
+    obs = env.reset(actual_task_id)
     return obs
 
 
