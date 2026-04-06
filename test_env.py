@@ -574,7 +574,7 @@ class TestConsistencyBonus:
 
 class TestHFSpace:
     def test_readme_has_frontmatter(self):
-        with open("README.md") as f:
+        with open("README.md", encoding="utf-8") as f:
             content = f.read()
         assert content.startswith("---"), "README.md must start with HF Space frontmatter"
         assert "sdk: docker" in content
