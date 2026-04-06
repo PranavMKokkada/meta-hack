@@ -303,7 +303,8 @@ class TriageEnv:
         consistency = self._consistency_bonus(action, ticket)
         total += consistency
 
-        total = round(max(0.0, min(1.0, total)), 4)
+        # Clamp to (0.001, 0.999) — strictly between 0 and 1
+        total = round(max(0.001, min(total, 0.999)), 4)
 
         return RewardBreakdown(
             classification_score=round(cls_score, 4),

@@ -168,14 +168,14 @@ def run_grader(task_id: str, actions: list[dict]) -> dict:
         if result.done:
             break
 
-    # Penalize missing tickets: each unsubmitted ticket scores 0.0
+    # Penalize missing tickets: each unsubmitted ticket scores 0.001 (minimum non-zero)
     num_submitted = len(per_ticket)
     num_missing = max(0, len(tickets) - num_submitted)
     for i in range(num_missing):
         missing_tid = tickets[num_submitted + i].ticket_id
         per_ticket.append({
             "ticket_id": missing_tid,
-            "reward": 0.0,
+            "reward": 0.001,
             "breakdown": {},
             "error": "no_action_submitted",
         })
