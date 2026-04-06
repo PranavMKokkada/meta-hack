@@ -149,7 +149,7 @@ def main():
             tally(check(f"grader({task_id}) returns 200", r.status_code == 200))
             gr = r.json()
             score = gr.get("score", -1)
-            tally(check(f"Score in [0.0, 1.0]", 0.0 <= score <= 1.0, f"score={score}"))
+            tally(check(f"Score in (0.0, 1.0)", 0.0 < score < 1.0, f"score={score}"))
             tally(check(f"per_ticket has entries", len(gr.get("per_ticket", [])) > 0))
 
         except Exception as e:

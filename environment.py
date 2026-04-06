@@ -128,7 +128,7 @@ class TriageEnv:
                 info={
                     "error": f"Max steps ({MAX_STEPS_PER_EPISODE}) exceeded. Episode terminated.",
                     "episode_reward": self._cumulative_reward,
-                    "episode_score": round(max(0.001, min(self._cumulative_reward / len(self._tickets), 0.999)), 4),
+                    "episode_score": round(max(0.01, min(self._cumulative_reward / len(self._tickets), 0.99)), 4),
                 },
             )
 
@@ -175,7 +175,7 @@ class TriageEnv:
                 done=True,
                 info={
                     "episode_reward": round(self._cumulative_reward, 4),
-                    "episode_score": round(max(0.001, min(episode_score, 0.999)), 4),
+                    "episode_score": round(max(0.01, min(episode_score, 0.99)), 4),
                     "results": self._results,
                 },
             )
@@ -303,17 +303,17 @@ class TriageEnv:
         consistency = self._consistency_bonus(action, ticket)
         total += consistency
 
-        # Clamp to (0.001, 0.999) — strictly between 0 and 1
-        total = round(max(0.001, min(total, 0.999)), 4)
+        # Clamp to (0.01, 0.99) — strictly between 0 and 1
+        total = round(max(0.01, min(total, 0.99)), 4)
 
         return RewardBreakdown(
-            classification_score=round(max(0.001, min(cls_score, 0.999)), 4),
-            priority_score=round(max(0.001, min(pri_score, 0.999)), 4),
-            routing_score=round(max(0.001, min(route_score, 0.999)), 4),
-            labels_score=round(max(0.001, min(label_score, 0.999)), 4),
-            duplicate_score=round(max(0.001, min(dup_score, 0.999)), 4),
-            response_score=round(max(0.001, min(resp_score, 0.999)), 4),
-            escalation_score=round(max(0.001, min(esc_score, 0.999)), 4),
+            classification_score=round(max(0.01, min(cls_score, 0.99)), 4),
+            priority_score=round(max(0.01, min(pri_score, 0.99)), 4),
+            routing_score=round(max(0.01, min(route_score, 0.99)), 4),
+            labels_score=round(max(0.01, min(label_score, 0.99)), 4),
+            duplicate_score=round(max(0.01, min(dup_score, 0.99)), 4),
+            response_score=round(max(0.01, min(resp_score, 0.99)), 4),
+            escalation_score=round(max(0.01, min(esc_score, 0.99)), 4),
             total=total,
         )
 
@@ -482,9 +482,9 @@ class TriageEnv:
         sentiment: str = "neutral",
     ) -> float:
         if not keywords:
-            return 1.0
+            return 0.99
         if not draft:
-            return 0.0
+            return 0.01
 
         draft_lower = draft.lower()
 
@@ -517,7 +517,7 @@ class TriageEnv:
         for pattern in UNPROFESSIONAL_PATTERNS:
             if re.search(pattern, draft_lower):
                 professionalism_score -= 0.4
-        professionalism_score = max(0.0, professionalism_score)
+        professionalism_score = max(0.01, professionalism_score)
 
         # Component 5: No hallucinated/forbidden claims (15% of response score)
         hallucination_score = 1.0
@@ -525,7 +525,7 @@ class TriageEnv:
             for phrase in forbidden:
                 if phrase.lower() in draft_lower:
                     hallucination_score -= 0.5
-        hallucination_score = max(0.0, hallucination_score)
+        hallucination_score = max(0.01, hallucination_score)
 
         # Component 6: Sentiment-appropriate response (20% of response score)
         # Angry/frustrated customers need empathy; polite customers need helpfulness
@@ -540,7 +540,8 @@ class TriageEnv:
             + 0.20 * sentiment_score
         )
 
-        return round(max(0.0, min(1.0, total)), 4)
+        # Return strictly between 0 and 1
+        return round(max(0.01, min(0.99, total)), 4)
 
     # ── SLA Urgency Modifier ───────────────────────────────────────────────
 

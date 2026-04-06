@@ -305,7 +305,7 @@ def validate():
                 })
             grader_result = run_grader(task_id, perfect_actions)
             score = grader_result["score"]
-            assert 0.0 <= score <= 1.0, f"Score {score} out of range"
+            assert 0.0 < score < 1.0, f"Score {score} out of range (must be strictly between 0 and 1)"
             assert score > 0.5, f"Perfect actions scored only {score}"
             results[f"grader_{task_id}"] = {"passed": True, "score": score}
         except Exception as e:

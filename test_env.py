@@ -217,7 +217,7 @@ class TestGrading:
 
     def test_empty_submission_scores_zero(self):
         result = run_grader("task_easy", [])
-        assert result["score"] == 0.001, f"Empty submission should score 0.001, got {result['score']}"
+        assert result["score"] == 0.01, f"Empty submission should score 0.01, got {result['score']}"
         assert result["num_submitted"] == 0
         assert len(result["per_ticket"]) == 6  # 6 missing tickets listed
 
@@ -314,11 +314,11 @@ class TestResponseGrading:
         return TriageEnv._grade_response(draft, keywords, forbidden, sentiment)
 
     def test_no_keywords_returns_1(self):
-        assert self._grade("anything", []) == 1.0
+        assert self._grade("anything", []) == 0.99
 
     def test_no_draft_returns_0(self):
-        assert self._grade(None, ["keyword"]) == 0.0
-        assert self._grade("", ["keyword"]) == 0.0
+        assert self._grade(None, ["keyword"]) == 0.01
+        assert self._grade("", ["keyword"]) == 0.01
 
     def test_all_keywords_high_score(self):
         score = self._grade(

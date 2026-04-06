@@ -190,7 +190,7 @@ def run_task(client: OpenAI, task_id: str) -> tuple[dict, list[float]]:
         action_str = json.dumps(action, separators=(',', ':'))
         error_json = json.dumps(error_msg) if error_msg else "null"
         done_str = "true" if done else "false"
-        print(f"[STEP] step={step_count} action={action_str} reward={reward:.2f} done={done_str} error={error_json}")
+        print(f"[STEP] step={step_count} action={action_str} reward={reward:.4f} done={done_str} error={error_json}")
         
         if not done and step_result.get("observation"):
             obs = step_result["observation"]
@@ -235,8 +235,8 @@ def main() -> None:
         # Emit [END] to stdout
         success = result.get("score", 0.0) > 0.0
         steps = len(rewards)
-        rewards_str = ",".join(f"{r:.2f}" for r in rewards)
-        print(f"[END] success={str(success).lower()} steps={steps} rewards={rewards_str}")
+        rewards_str = ",".join(f"{r:.4f}" for r in rewards)
+        print(f"[END] success={str(success).lower()} steps={steps} score={result['score']:.4f} rewards={rewards_str}")
         
         print(f"  {task_id}: score={result['score']}", file=sys.stderr)
 
