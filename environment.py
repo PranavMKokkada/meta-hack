@@ -128,7 +128,7 @@ class TriageEnv:
                 info={
                     "error": f"Max steps ({MAX_STEPS_PER_EPISODE}) exceeded. Episode terminated.",
                     "episode_reward": self._cumulative_reward,
-                    "episode_score": round(max(0.0001, min(0.9999, self._cumulative_reward / len(self._tickets))), 4),
+                    "episode_score": round(max(0.001, min(self._cumulative_reward / len(self._tickets), 0.999)), 4),
                 },
             )
 
@@ -175,7 +175,7 @@ class TriageEnv:
                 done=True,
                 info={
                     "episode_reward": round(self._cumulative_reward, 4),
-                    "episode_score": round(max(0.0001, min(0.9999, episode_score)), 4),
+                    "episode_score": round(max(0.001, min(episode_score, 0.999)), 4),
                     "results": self._results,
                 },
             )
