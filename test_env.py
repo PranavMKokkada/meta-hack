@@ -217,7 +217,7 @@ class TestGrading:
 
     def test_empty_submission_scores_zero(self):
         result = run_grader("task_easy", [])
-        assert result["score"] == 0.0
+        assert result["score"] == 0.0001, f"Empty submission should score 0.0001, got {result['score']}"
         assert result["num_submitted"] == 0
         assert len(result["per_ticket"]) == 6  # 6 missing tickets listed
 

@@ -181,8 +181,9 @@ def run_grader(task_id: str, actions: list[dict]) -> dict:
         })
 
     # Score = average over ALL tickets (including missing ones)
+    # Must be strictly between 0 and 1 (exclusive) — clamp to (0.0001, 0.9999)
     score = total_reward / len(tickets) if tickets else 0.0
-    score = round(max(0.0, min(1.0, score)), 4)
+    score = round(max(0.0001, min(0.9999, score)), 4)
 
     return {
         "task_id": task_id,

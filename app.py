@@ -315,7 +315,7 @@ def validate():
     # 4. Test grader with empty submission
     try:
         empty_result = run_grader("task_easy", [])
-        assert empty_result["score"] == 0.0
+        assert empty_result["score"] == 0.0001, f"Empty score should be 0.0001, got {empty_result['score']}"
         assert empty_result["num_submitted"] == 0
         results["grader_empty"] = {"passed": True}
     except Exception as e:
