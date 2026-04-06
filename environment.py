@@ -307,13 +307,13 @@ class TriageEnv:
         total = round(max(0.001, min(total, 0.999)), 4)
 
         return RewardBreakdown(
-            classification_score=round(cls_score, 4),
-            priority_score=round(pri_score, 4),
-            routing_score=round(route_score, 4),
-            labels_score=round(label_score, 4),
-            duplicate_score=round(dup_score, 4),
-            response_score=round(resp_score, 4),
-            escalation_score=round(esc_score, 4),
+            classification_score=round(max(0.001, min(cls_score, 0.999)), 4),
+            priority_score=round(max(0.001, min(pri_score, 0.999)), 4),
+            routing_score=round(max(0.001, min(route_score, 0.999)), 4),
+            labels_score=round(max(0.001, min(label_score, 0.999)), 4),
+            duplicate_score=round(max(0.001, min(dup_score, 0.999)), 4),
+            response_score=round(max(0.001, min(resp_score, 0.999)), 4),
+            escalation_score=round(max(0.001, min(esc_score, 0.999)), 4),
             total=total,
         )
 
